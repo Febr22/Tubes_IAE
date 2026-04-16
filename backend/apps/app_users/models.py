@@ -3,9 +3,8 @@ from django.contrib.auth.models import AbstractUser
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = (
-        ('buyer', 'Pembeli'),
-        ('seller', 'Penjual'),
-        ('admin', 'Admin'),
+        ('buyer', 'Pelanggan'),
+        ('admin', 'Admin Toko'), # Hanya ada pelanggan dan admin toko
     )
     
     email = models.EmailField(unique=True)
