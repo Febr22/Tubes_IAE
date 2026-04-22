@@ -23,7 +23,7 @@ class Produk(models.Model):
     # ImageField membutuhkan library 'Pillow' (pip install Pillow)
     gambar = models.ImageField(upload_to='katalog/produk/', null=True, blank=True)
     
-    # Spesifikasi teknis tambahan (cocok untuk toko komputer)
+    # Spesifikasi teknis tambahan 
     prosesor = models.CharField(max_length=100, blank=True)
     ram = models.CharField(max_length=50, blank=True)
     storage = models.CharField(max_length=50, blank=True)

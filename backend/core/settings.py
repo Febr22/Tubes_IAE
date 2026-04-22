@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     # --- Bawaan Django ---
     'django.contrib.admin',
     'django.contrib.auth',
@@ -219,4 +220,26 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
+}
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Admin UnivStore",
+    "site_header": "UnivStore",
+    "site_brand": "UnivStore",
+    "welcome_sign": "Selamat Datang di Management System",
+    "copyright": "Kelompok IAE",
+    "search_model": ["app_katalog.Produk"],
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "order_with_respect_to": ["app_users", "app_katalog", "app_pesanan"],
+    "icons": {
+        "app_users.CustomUser": "fas fa-users",
+        "app_katalog.Produk": "fas fa-laptop",
+        "app_pesanan.Pesanan": "fas fa-shopping-cart",
+    },
+}
+
+# Pilih tema warna (opsional, coba 'flatly' atau 'darkly')
+JAZZMIN_UI_TWEAKS = {
+    "theme": "flatly", 
 }
