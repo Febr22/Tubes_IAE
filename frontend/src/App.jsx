@@ -1,21 +1,29 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+// Import semua halaman kamu
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
-// 1. IMPORT file Katalog kamu di sini
-import Katalog from './pages/Katalog'; 
+import KatalogProduk from './pages/Katalog.jsx'; // Sesuaikan dengan nama file katalog kamu
+import DetailProduk from './pages/DetailProduk';
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Halaman Landing/Home */}
         <Route path="/" element={<Home />} />
+        
+        {/* Halaman Auth */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         
-        {/* 2. TAMBAHKAN baris ini agar alamat /katalog bisa diakses */}
-        <Route path="/katalog" element={<Katalog />} />
+        {/* Halaman Daftar Katalog */}
+        <Route path="/katalog" element={<KatalogProduk />} />
+        
+        {/* Halaman Detail Laptop (Dinamis) */}
+        <Route path="/katalog/:slug" element={<DetailProduk />} />
       </Routes>
     </Router>
   );
