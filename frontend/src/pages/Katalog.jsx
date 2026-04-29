@@ -9,7 +9,7 @@ const KatalogProduk = () => {
     useEffect(() => {
         const fetchProduk = async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:8001/api/katalog/produk/');
+                const response = await axios.get('http://127.0.0.1:8000/api/katalog/produk/');
                 // Pastikan data yang masuk adalah array
                 const data = Array.isArray(response.data) ? response.data : (response.data.results || []);
                 setProduks(data);

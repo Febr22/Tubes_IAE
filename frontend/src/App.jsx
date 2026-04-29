@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import KatalogProduk from './pages/Katalog.jsx'; // Sesuaikan dengan nama file katalog kamu
 import DetailProduk from './pages/DetailProduk';
+import Pemesanan from "./pages/Pemesanan";
 
 function App() {
   return (
@@ -24,6 +25,9 @@ function App() {
         
         {/* Halaman Detail Laptop (Dinamis) */}
         <Route path="/katalog/:slug" element={<DetailProduk />} />
+
+        {/* Hamalam Pemesanan */}
+        <Route path="/pemesanan" element={<Pemesanan />} />        
       </Routes>
     </Router>
   );
