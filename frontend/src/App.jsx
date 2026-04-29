@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 // 1. IMPORT file Katalog kamu di sini
 import Katalog from './pages/Katalog'; 
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
@@ -16,6 +17,9 @@ function App() {
         
         {/* 2. TAMBAHKAN baris ini agar alamat /katalog bisa diakses */}
         <Route path="/katalog" element={<Katalog />} />
+        
+        {/* Route Dashboard */}
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>
   );
