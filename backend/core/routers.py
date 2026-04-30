@@ -3,7 +3,7 @@ class MicroserviceRouter:
     Router untuk memisahkan data antar database berdasarkan aplikasi (app_label).
     """
     route_app_labels = {
-        # 'app_users': 'users_db',
+        #'app_users': 'users_db',
         'app_katalog': 'katalog_db',
         'app_pesanan': 'pesanan_db',
         'app_pembayaran': 'pembayaran_db',
