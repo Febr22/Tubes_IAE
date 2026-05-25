@@ -1,31 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-// import api from '../services/api'; // Bisa diaktifkan jika Home butuh fetch data dari API nanti
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Home = () => {
-  // --- INI ADALAH LANGKAH 2B: LOGIKA LOGIN & LOGOUT ---
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const navigate = useNavigate();
-
-  // Mengecek apakah ada token saat halaman pertama kali dimuat
-  useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      setIsLoggedIn(true);
-    }
-  }, []);
-
-  // Fungsi untuk Keluar (Logout)
-  const handleLogout = () => {
-    // Hapus token dari browser
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    setIsLoggedIn(false);
-    alert('Anda telah berhasil keluar.');
-    navigate('/');
-  };
-  // ----------------------------------------------------
-
   const laptopHeroImg = "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=600&auto=format&fit=crop"; 
   const studentGridImgs = [
     "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=200&h=200&auto=format&fit=crop",
@@ -39,38 +15,6 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
-      
-      {/* 1. NAVBAR SECTION */}
-      <nav className="fixed top-0 w-full bg-white shadow-sm z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className={`text-2xl font-bold ${navyTextColor}`}>UnivStore.</h1>
-          <div className="flex items-center gap-6 text-sm font-medium">
-            <Link to="/" className="hover:text-blue-600">Beranda</Link>
-            <Link to="/katalog" className="hover:text-blue-600">Katalog Produk</Link>
-            <Link to="/support" className="hover:text-blue-600">Pusat Bantuan</Link>
-          </div>
-          
-          {/* --- INI ADALAH LANGKAH 2C: PERUBAHAN TAMPILAN NAVBAR --- */}
-          <div className="flex items-center gap-3">
-            {isLoggedIn ? (
-              <>
-                <Link to="/dashboard" className={`px-4 py-2 text-sm font-medium ${navyTextColor}`}>Dashboard</Link>
-                <button onClick={handleLogout} className={`px-5 py-2 text-sm font-medium bg-red-600 text-white rounded-lg shadow hover:bg-red-700 transition`}>
-                  Keluar
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className={`px-4 py-2 text-sm font-medium ${navyTextColor}`}>Masuk</Link>
-                <Link to="/register" className={`px-5 py-2 text-sm font-medium ${navyColor} text-white rounded-lg shadow`}>Daftar</Link>
-              </>
-            )}
-          </div>
-          {/* -------------------------------------------------------- */}
-
-        </div>
-      </nav>
-
       {/* 2. HERO SECTION */}
       <header className="pt-32 pb-20 px-6 bg-white">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">

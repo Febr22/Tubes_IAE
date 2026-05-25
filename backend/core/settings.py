@@ -11,9 +11,14 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env file
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -202,9 +207,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # --- KONFIGURASI TAMBAHAN ---
 
 # Mengizinkan React (Frontend) untuk berkomunikasi dengan API Django (Backend)
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173", # Port default Vite/React
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 AUTH_USER_MODEL = 'app_users.CustomUser'
 
@@ -239,7 +242,11 @@ JAZZMIN_SETTINGS = {
     },
 }
 
-# Pilih tema warna (opsional, coba 'flatly' atau 'darkly')
 JAZZMIN_UI_TWEAKS = {
     "theme": "flatly", 
 }
+
+# --- MIDTRANS CONFIGURATION ---
+MIDTRANS_SERVER_KEY = os.getenv('MIDTRANS_SERVER_KEY')
+MIDTRANS_CLIENT_KEY = os.getenv('MIDTRANS_CLIENT_KEY')
+MIDTRANS_IS_PRODUCTION = os.getenv('MIDTRANS_IS_PRODUCTION', 'False').lower() == 'true'
