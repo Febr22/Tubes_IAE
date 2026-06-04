@@ -244,3 +244,8 @@ JAZZMIN_SETTINGS = {
 JAZZMIN_UI_TWEAKS = {
     "theme": "flatly", 
 }
+
+# Arahkan ke rute katalog setelah login via Django
+LOGIN_REDIRECT_URL = '/katalog/'
+# Arahkan kembali ke login setelah logout
+LOGOUT_REDIRECT_URL = 'http://localhost:5173/'
