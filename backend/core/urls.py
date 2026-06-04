@@ -9,6 +9,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/users/', include('apps.app_users.urls')),
     path('api/katalog/', include('apps.app_katalog.urls')),
+    path('api/pesanan/', include('apps.app_pesanan.urls')),
+    path('api/pembayaran/', include('apps.app_pembayaran.urls')),
 ]
 
 # Mengizinkan akses file media (gambar produk, dll) saat mode development (DEBUG = True)

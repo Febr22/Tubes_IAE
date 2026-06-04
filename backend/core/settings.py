@@ -11,9 +11,14 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env file
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -87,8 +92,6 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 
 # Database Configuration for Microservices Approach
-# Pastikan db_utama, db_ms_users, db_ms_katalog, dll sudah dibuat di phpMyAdmin
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -153,8 +156,6 @@ DATABASE_ROUTERS = ['core.routers.MicroserviceRouter']
 
 
 # Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -172,33 +173,23 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
 STATIC_URL = 'static/'
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-import os 
 
 # Media files (File yang diupload seperti gambar produk)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 # --- KONFIGURASI TAMBAHAN ---
 
@@ -223,6 +214,7 @@ REST_FRAMEWORK = {
     )
 }
 
+# --- JAZZMIN CONFIGURATION ---
 JAZZMIN_SETTINGS = {
     "site_title": "Admin UnivStore",
     "site_header": "UnivStore",
@@ -240,11 +232,17 @@ JAZZMIN_SETTINGS = {
     },
 }
 
-# Pilih tema warna (opsional, coba 'flatly' atau 'darkly')
+# Pilih tema warna
 JAZZMIN_UI_TWEAKS = {
     "theme": "flatly", 
 }
 
+# --- MIDTRANS CONFIGURATION ---
+MIDTRANS_SERVER_KEY = os.getenv('MIDTRANS_SERVER_KEY')
+MIDTRANS_CLIENT_KEY = os.getenv('MIDTRANS_CLIENT_KEY')
+MIDTRANS_IS_PRODUCTION = os.getenv('MIDTRANS_IS_PRODUCTION', 'False').lower() == 'true'
+
+# --- REDIRECTS ---
 # Arahkan ke rute katalog setelah login via Django
 LOGIN_REDIRECT_URL = '/katalog/'
 # Arahkan kembali ke login setelah logout

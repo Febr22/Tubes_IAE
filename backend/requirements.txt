@@ -7,3 +7,5 @@ pillow==12.2.0
 PyJWT==2.12.1
 PyMySQL==1.1.2
 sqlparse==0.5.5
+midtransclient==1.4.2
+python-dotenv==1.2.2
