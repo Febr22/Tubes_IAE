@@ -234,11 +234,12 @@ JAZZMIN_SETTINGS = {
     "search_model": ["app_katalog.Produk"],
     "show_sidebar": True,
     "navigation_expanded": True,
-    "order_with_respect_to": ["app_users", "app_katalog", "app_pesanan"],
+    "order_with_respect_to": ["app_users", "app_katalog", "app_pesanan", "app_pembayaran"],
     "icons": {
         "app_users.CustomUser": "fas fa-users",
         "app_katalog.Produk": "fas fa-laptop",
-        "app_pesanan.Pesanan": "fas fa-shopping-cart",
+        "app_pesanan.Order": "fas fa-shopping-cart",
+        "app_pembayaran.Pembayaran": "fas fa-credit-card",
     },
 }
 
@@ -249,4 +250,4 @@ JAZZMIN_UI_TWEAKS = {
 # --- MIDTRANS CONFIGURATION ---
 MIDTRANS_SERVER_KEY = os.getenv('MIDTRANS_SERVER_KEY')
 MIDTRANS_CLIENT_KEY = os.getenv('MIDTRANS_CLIENT_KEY')
-MIDTRANS_IS_PRODUCTION = os.getenv('MIDTRANS_IS_PRODUCTION', 'False').lower() == 'true'
+MIDTRANS_IS_PRODUCTION = os.getenv('MIDTRANS_IS_PRODUCTION', 'False').lower() == 'true'

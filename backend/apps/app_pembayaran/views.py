@@ -310,3 +310,63 @@ class CheckPaymentStatusView(APIView):
                 {"error": f"Gagal mengecek status ke Midtrans: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+from rest_framework.parsers import MultiPartParser, FormParser
+
+class ConfirmManualPaymentView(APIView):
+    """
+    Endpoint untuk mengunggah bukti bayar transfer bank manual.
+    POST /api/pembayaran/konfirmasi-manual/
+    Content-Type: multipart/form-data
+    """
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        order_id = request.data.get('order_id')
+        bukti_bayar = request.FILES.get('bukti_bayar')
+
+        if not order_id:
+            return Response({"error": "order_id wajib disertakan."}, status=status.HTTP_400_BAD_REQUEST)
+        if not bukti_bayar:
+            return Response({"error": "bukti_bayar wajib disertakan."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Ambil detail Order
+            order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist:
+            return Response({"error": "Order tidak ditemukan."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Cek apakah user yang login adalah pemilik order
+        if order.pembeli_id != request.user.id:
+            return Response({"error": "Anda tidak memiliki akses ke order ini."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Cek apakah pembayaran sudah lunas
+        pembayaran, created = Pembayaran.objects.get_or_create(order_id=order_id)
+        if pembayaran.is_lunas:
+            return Response({"error": "Order ini sudah dibayar lunas."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Simpan bukti bayar dan perbarui status ke manual transfer
+        pembayaran.metode = 'transfer'
+        pembayaran.bukti_bayar = bukti_bayar
+        pembayaran.status_transaksi = 'pending'  # Tetap pending sampai dikonfirmasi admin
+        
+        # Set gross_amount manual jika belum diisi/masih 0
+        if pembayaran.gross_amount == 0:
+            pembayaran.gross_amount = order.total_harga + 5000 # Order total_harga + admin fee
+            
+        pembayaran.save()
+
+        # Update order status to konfirmasi (Menunggu Konfirmasi)
+        if order.status != 'konfirmasi':
+            order.status = 'konfirmasi'
+            order.save()
+
+        # Gunakan serializer untuk response
+        serializer = PembayaranSerializer(pembayaran)
+        return Response({
+            "message": "Bukti pembayaran berhasil diunggah. Menunggu konfirmasi admin.",
+            "payment": serializer.data
+        }, status=status.HTTP_200_OK)
+
