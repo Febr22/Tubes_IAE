@@ -11,7 +11,9 @@ import {
   ChevronRight, 
   Calendar, 
   CreditCard,
-  Laptop
+  Laptop,
+  Truck,
+  Package
 } from "lucide-react";
 import pembayaranService from "../services/pembayaranService";
 
@@ -82,6 +84,9 @@ const StatusPembayaran = () => {
     if (["settlement", "capture", "success", "paid"].includes(status) || paymentData?.is_lunas) {
       return "success";
     }
+    if (paymentData?.metode === 'transfer' && paymentData?.bukti_bayar) {
+      return "waiting_confirmation";
+    }
     if (["pending"].includes(status)) {
       return "pending";
     }
@@ -98,6 +103,95 @@ const StatusPembayaran = () => {
     if (!dateString) return "-";
     const options = { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" };
     return new Date(dateString).toLocaleDateString("id-ID", options);
+  };
+
+  const getOrderStep = (status) => {
+    switch (status) {
+      case "pending":
+        return 1;
+      case "konfirmasi":
+      case "waiting_confirmation":
+        return 2;
+      case "diproses":
+        return 3;
+      case "dikirim":
+        return 4;
+      case "selesai":
+        return 5;
+      default:
+        return 1;
+    }
+  };
+
+  const renderOrderTracking = () => {
+    const orderStatus = orderData.status;
+    if (orderStatus === "dibatalkan") {
+      return null;
+    }
+
+    const currentStep = getOrderStep(orderStatus);
+    const steps = [
+      { id: 1, label: "Pesanan Dibuat", icon: ShoppingBag },
+      { id: 2, label: "Menunggu Konfirmasi", icon: Clock },
+      { id: 3, label: "Laptop Disiapkan", icon: Package },
+      { id: 4, label: "Sedang Dikirim", icon: Truck },
+      { id: 5, label: "Laptop Diterima", icon: CheckCircle2 },
+    ];
+
+    return (
+      <div className="p-6 bg-slate-50/30 border-b border-slate-100">
+        <h3 className="font-extrabold text-slate-800 text-sm mb-6 flex items-center gap-1.5 justify-center">
+          Status Pelacakan Pesanan
+        </h3>
+        <div className="relative flex items-center justify-between w-full max-w-lg mx-auto px-2">
+          
+          {/* Progress bar line */}
+          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-slate-200 -translate-y-1/2 z-0" />
+          
+          {/* Active progress line */}
+          <div 
+            className="absolute top-1/2 left-0 h-0.5 bg-blue-600 -translate-y-1/2 z-0 transition-all duration-500" 
+            style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+          />
+
+          {steps.map((step) => {
+            const Icon = step.icon;
+            const isCompleted = step.id < currentStep;
+            const isActive = step.id === currentStep;
+            
+            return (
+              <div key={step.id} className="relative z-10 flex flex-col items-center">
+                <div 
+                  className={`w-9 h-9 rounded-full flex items-center justify-center transition duration-300 relative ${
+                    isCompleted 
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-600/10" 
+                      : isActive 
+                        ? "bg-blue-600 text-white shadow-md shadow-blue-600/20 ring-4 ring-blue-50" 
+                        : "bg-slate-100 text-slate-400 border border-slate-200"
+                  }`}
+                >
+                  {isActive && (
+                    <span className="absolute inset-0 rounded-full bg-blue-600/30 animate-ping z-[-1]" />
+                  )}
+                  <Icon className="w-4 h-4" />
+                </div>
+                <span 
+                  className={`text-[9px] font-bold mt-2 text-center max-w-[80px] leading-tight ${
+                    isActive 
+                      ? "text-blue-600 font-extrabold" 
+                      : isCompleted 
+                        ? "text-slate-800" 
+                        : "text-slate-400"
+                  }`}
+                >
+                  {step.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
@@ -167,6 +261,16 @@ const StatusPembayaran = () => {
               </>
             )}
 
+            {status === "waiting_confirmation" && (
+              <>
+                <Clock className="w-20 h-20 text-amber-500 mx-auto mb-4 animate-pulse" />
+                <h2 className="text-2xl font-extrabold text-slate-900 mb-1">Menunggu Konfirmasi Admin</h2>
+                <p className="text-sm text-slate-500 max-w-sm mx-auto">
+                  Bukti pembayaran manual Anda telah kami terima dan sedang diverifikasi oleh admin. Kami akan segera memperbarui status pesanan Anda.
+                </p>
+              </>
+            )}
+
             {status === "pending" && (
               <>
                 <Clock className="w-20 h-20 text-amber-500 mx-auto mb-4 animate-pulse" />
@@ -187,6 +291,8 @@ const StatusPembayaran = () => {
               </>
             )}
           </div>
+
+          {renderOrderTracking()}
 
           {/* Invoice Info */}
           <div className="p-6 bg-slate-50/50 border-b border-slate-100 text-xs text-slate-600 space-y-3">

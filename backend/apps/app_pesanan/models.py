@@ -2,10 +2,11 @@ from django.db import models
 
 class Order(models.Model):
     STATUS_CHOICES = (
-        ('pending', 'Menunggu Pembayaran'),
-        ('diproses', 'Sedang Diproses'),
-        ('dikirim', 'Dalam Pengiriman'),
-        ('selesai', 'Selesai'),
+        ('pending', 'Pesanan Dibuat'),
+        ('konfirmasi', 'Menunggu Konfirmasi'),
+        ('diproses', 'Laptop Disiapkan'),
+        ('dikirim', 'Sedang Dikirim'),
+        ('selesai', 'Laptop Diterima'),
         ('dibatalkan', 'Dibatalkan'),
     )
 

@@ -132,9 +132,17 @@ const Navbar = () => {
                 {isDropdownOpen && (
                   <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                     <Link 
-                      to="/pesanan" 
+                      to="/profil" 
                       onClick={() => setIsDropdownOpen(false)}
                       className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition"
+                    >
+                      <User className="w-4 h-4 text-slate-500" />
+                      Profil Saya
+                    </Link>
+                    <Link 
+                      to="/pesanan" 
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition border-t border-slate-50"
                     >
                       <ShoppingBag className="w-4 h-4 text-slate-500" />
                       Pesanan Saya
@@ -211,17 +219,30 @@ const Navbar = () => {
               </Link>
             ))}
             {isLoggedIn && (
-              <Link 
-                to="/pesanan"
-                onClick={() => setIsMenuOpen(false)}
-                className={`block py-2.5 px-4 rounded-xl text-sm font-bold transition ${
-                  isActive('/pesanan') 
-                    ? 'bg-blue-50 text-blue-600' 
-                    : 'text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                Pesanan Saya
-              </Link>
+              <>
+                <Link 
+                  to="/profil"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`block py-2.5 px-4 rounded-xl text-sm font-bold transition ${
+                    isActive('/profil') 
+                      ? 'bg-blue-50 text-blue-600' 
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  Profil Saya
+                </Link>
+                <Link 
+                  to="/pesanan"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`block py-2.5 px-4 rounded-xl text-sm font-bold transition ${
+                    isActive('/pesanan') 
+                      ? 'bg-blue-50 text-blue-600' 
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  Pesanan Saya
+                </Link>
+              </>
             )}
           </div>
 

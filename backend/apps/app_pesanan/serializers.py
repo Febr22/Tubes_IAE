@@ -62,6 +62,8 @@ class OrderSerializer(serializers.ModelSerializer):
                     "status_transaksi": pembayaran.status_transaksi,
                     "metode_pembayaran_midtrans": pembayaran.metode_pembayaran_midtrans,
                     "gross_amount": pembayaran.gross_amount,
+                    "bukti_bayar": pembayaran.bukti_bayar.url if pembayaran.bukti_bayar else None,
+                    "metode": pembayaran.metode,
                 }
         except Exception:
             pass
