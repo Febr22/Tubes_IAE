@@ -11,10 +11,10 @@ import Pemesanan from "./pages/Pemesanan";
 import Cart from "./pages/Cart";
 import Pesanan from "./pages/Pesanan";
 import StatusPembayaran from "./pages/StatusPembayaran";
+import Profil from "./pages/Profil";
 import Navbar from "./components/Navbar";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { CartProvider } from "./context/CartContext";
-import Profil from './pages/Profil';
 
 function App() {
   return (
@@ -47,7 +47,8 @@ function App() {
 
             {/* Halaman Status Pembayaran Redirect Midtrans */}
             <Route path="/status-pembayaran" element={<StatusPembayaran />} />
-
+            
+            {/* Halaman Profil & Alamat Pengiriman */}
             <Route path="/profil" element={<Profil />} />
           </Routes>
         </ErrorBoundary>

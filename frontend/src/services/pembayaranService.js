@@ -70,6 +70,29 @@ const pembayaranService = {
       console.error("Gagal mendapatkan detail pesanan:", error);
       throw error.response?.data || error.message;
     }
+  },
+
+  /**
+   * Mengunggah bukti pembayaran manual
+   * @param {number} orderId
+   * @param {File} file
+   */
+  unggahBuktiBayar: async (orderId, file) => {
+    try {
+      const formData = new FormData();
+      formData.append('order_id', orderId);
+      formData.append('bukti_bayar', file);
+
+      const response = await api.post('pembayaran/konfirmasi-manual/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Gagal mengunggah bukti bayar:", error);
+      throw error.response?.data || error.message;
+    }
   }
 };
 

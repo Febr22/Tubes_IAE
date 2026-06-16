@@ -92,6 +92,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 
 # Database Configuration for Microservices Approach
+# Pastikan db_utama, db_ms_users, db_ms_katalog, dll sudah dibuat di phpMyAdmin
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -194,9 +195,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # --- KONFIGURASI TAMBAHAN ---
 
 # Mengizinkan React (Frontend) untuk berkomunikasi dengan API Django (Backend)
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173", # Port default Vite/React
-]
+CORS_ALLOW_ALL_ORIGINS = True # Menggunakan versi dari branch agar tidak ada masalah CORS saat development
 
 AUTH_USER_MODEL = 'app_users.CustomUser'
 
@@ -224,11 +223,12 @@ JAZZMIN_SETTINGS = {
     "search_model": ["app_katalog.Produk"],
     "show_sidebar": True,
     "navigation_expanded": True,
-    "order_with_respect_to": ["app_users", "app_katalog", "app_pesanan"],
+    "order_with_respect_to": ["app_users", "app_katalog", "app_pesanan", "app_pembayaran"], # Pembayaran ditambahkan
     "icons": {
         "app_users.CustomUser": "fas fa-users",
         "app_katalog.Produk": "fas fa-laptop",
-        "app_pesanan.Pesanan": "fas fa-shopping-cart",
+        "app_pesanan.Pesanan": "fas fa-shopping-cart", # Saya gunakan nama model 'Pesanan' dari branch kamu, bukan 'Order'
+        "app_pembayaran.Pembayaran": "fas fa-credit-card", # Icon untuk app_pembayaran ditambahkan
     },
 }
 
