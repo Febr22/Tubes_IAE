@@ -14,7 +14,16 @@ class Order(models.Model):
     total_harga = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     catatan = models.TextField(blank=True, null=True)
+    
+    # --- Field Pengiriman (Gabungan Snapshot & Logistik) ---
     alamat_pengiriman = models.TextField(blank=True, null=True)
+    provinsi = models.CharField(max_length=100, blank=True, null=True)
+    kota = models.CharField(max_length=100, blank=True, null=True)
+    kurir = models.CharField(max_length=50, blank=True, null=True) # e.g. jne, pos, tiki
+    layanan = models.CharField(max_length=50, blank=True, null=True) # e.g. REG, YES
+    ongkos_kirim = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    resi = models.CharField(max_length=100, blank=True, null=True)
+    
     tanggal_pesan = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -110,7 +110,7 @@ const Pesanan = () => {
 
     // Load Midtrans Snap script if not loaded
     const snapScriptUrl = "https://app.sandbox.midtrans.com/snap/snap.js";
-    const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY || "SB-Mid-client-A1b2C3d4E5f6G7h8";
+    const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY || "Mid-client-So7Wzz5nA-YQFaaG";
     let script = document.querySelector(`script[src="${snapScriptUrl}"]`);
     if (!script) {
       script = document.createElement("script");

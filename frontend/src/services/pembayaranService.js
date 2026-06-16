@@ -19,6 +19,34 @@ const pembayaranService = {
   },
 
   /**
+   * Mencari destinasi pengiriman (kecamatan/kota) dari Komerce API
+   * @param {string} keyword
+   */
+  cariLokasi: async (keyword) => {
+    try {
+      const response = await api.get('pengiriman/lokasi/', { params: { search: keyword } });
+      return response.data; // { status, data }
+    } catch (error) {
+      console.error("Gagal mencari lokasi:", error);
+      throw error.response?.data || error.message;
+    }
+  },
+
+  /**
+   * Mengecek ongkos kirim
+   * @param {Object} data - { destination, courier }
+   */
+  cekOngkir: async (data) => {
+    try {
+      const response = await api.post('pengiriman/cek-ongkir/', data);
+      return response.data; // { status, results }
+    } catch (error) {
+      console.error("Gagal mengecek ongkos kirim:", error);
+      throw error.response?.data || error.message;
+    }
+  },
+
+  /**
    * Mendapatkan Snap Token dari backend
    * @param {number} orderId - ID dari order yang baru dibuat
    */
