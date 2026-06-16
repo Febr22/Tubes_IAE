@@ -30,7 +30,12 @@ const userService = {
    */
   perbaruiProfil: async (data) => {
     try {
-      const response = await api.patch('users/me/', data);
+      // Tambahkan konfigurasi headers di argumen ketiga
+      const response = await api.patch('users/me/', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       return response.data;
     } catch (error) {
       console.error("Gagal memperbarui profil:", error);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { 
-  User, Mail, Phone, MapPin, Save, Loader2, Shield, ChevronRight, Check, X, Plus, Trash2, Star
+  User, Mail, Phone, MapPin, Save, Loader2, Shield, ChevronRight, Check, X, Plus, Trash2, Star, Camera
 } from "lucide-react";
 import userService from "../services/userService";
 
@@ -12,20 +12,17 @@ const Profil = () => {
     first_name: "",
     last_name: "",
     no_telepon: "",
-    role: ""
+    role: "",
+    foto_profil: null, // URL foto dari backend
+    fotoFile: null,    // File fisik yang dipilih user
+    previewFoto: null  // URL sementara untuk preview di browser
   });
   
   // State untuk fitur Alamat
   const [alamatList, setAlamatList] = useState([]);
   const [isModalAlamatOpen, setIsModalAlamatOpen] = useState(false);
   const [formAlamat, setFormAlamat] = useState({
-    nama_penerima: "",
-    no_telepon: "",
-    alamat_lengkap: "",
-    kota_kabupaten: "",
-    provinsi: "",
-    kode_pos: "",
-    is_utama: false
+    nama_penerima: "", no_telepon: "", alamat_lengkap: "", kota_kabupaten: "", provinsi: "", kode_pos: "", is_utama: false
   });
 
   const [loading, setLoading] = useState(true);
@@ -33,6 +30,9 @@ const Profil = () => {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const navigate = useNavigate();
+
+  // URL Dasar untuk Gambar (Sesuaikan jika backend beda port)
+  const BASE_URL = "http://127.0.0.1:8000";
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -46,18 +46,26 @@ const Profil = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Ambil data profil user
       const userData = await userService.dapatkanProfil();
+      
+      // Jika url foto tidak pakai http (relatif), tambahkan BASE_URL
+      let fotoUrl = userData.foto_profil;
+      if (fotoUrl && !fotoUrl.startsWith("http")) {
+          fotoUrl = `${BASE_URL}${fotoUrl}`;
+      }
+
       setProfile({
         username: userData.username || "",
         email: userData.email || "",
         first_name: userData.first_name || "",
         last_name: userData.last_name || "",
         no_telepon: userData.no_telepon || "",
-        role: userData.role || ""
+        role: userData.role || "",
+        foto_profil: fotoUrl,
+        fotoFile: null,
+        previewFoto: null
       });
 
-      // Ambil data daftar alamat
       const alamatData = await userService.getDaftarAlamat();
       setAlamatList(alamatData);
     } catch (err) {
@@ -74,19 +82,40 @@ const Profil = () => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
   };
 
+  // Menangani saat user memilih file gambar
+  const handleFotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfile({
+        ...profile,
+        fotoFile: file,
+        previewFoto: URL.createObjectURL(file) // Membuat link preview sementara
+      });
+    }
+  };
+
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     setSuccessMsg(""); setErrorMsg("");
 
     try {
-      await userService.perbaruiProfil({
-        username: profile.username,
-        first_name: profile.first_name,
-        last_name: profile.last_name,
-        no_telepon: profile.no_telepon,
-      });
-      setSuccessMsg("Informasi profil berhasil diperbarui!");
+      // WAJIB menggunakan FormData karena kita mengirim file (gambar)
+      const formData = new FormData();
+      formData.append('username', profile.username);
+      formData.append('first_name', profile.first_name);
+      formData.append('last_name', profile.last_name);
+      formData.append('no_telepon', profile.no_telepon);
+      
+      // Lampirkan file foto jika user memilih foto baru
+      if (profile.fotoFile) {
+        formData.append('foto_profil', profile.fotoFile);
+      }
+
+      await userService.perbaruiProfil(formData);
+      
+      setSuccessMsg("Informasi profil dan foto berhasil diperbarui!");
+      fetchData(); // Refresh data untuk mendapatkan URL gambar permanen dari backend
       setTimeout(() => setSuccessMsg(""), 5000);
     } catch (err) {
       const errorMessage = typeof err === 'object' ? JSON.stringify(err) : err;
@@ -96,7 +125,7 @@ const Profil = () => {
     }
   };
 
-  // --- HANDLE ALAMAT ---
+  // --- HANDLE ALAMAT (Dibiarkan sama persis) ---
   const handleAlamatChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     setFormAlamat({ ...formAlamat, [e.target.name]: value });
@@ -112,10 +141,9 @@ const Profil = () => {
       setIsModalAlamatOpen(false);
       setFormAlamat({ nama_penerima: "", no_telepon: "", alamat_lengkap: "", kota_kabupaten: "", provinsi: "", kode_pos: "", is_utama: false });
       setSuccessMsg("Alamat baru berhasil ditambahkan!");
-      fetchData(); // Refresh daftar alamat
+      fetchData(); 
       setTimeout(() => setSuccessMsg(""), 5000);
     } catch (err) {
-      // --- PENANGKAP ERROR DETAIL DARI BACKEND ---
       const errorMessage = typeof err === 'object' ? JSON.stringify(err) : err;
       setErrorMsg(`Gagal menambahkan alamat: ${errorMessage}`);
     } finally {
@@ -165,6 +193,9 @@ const Profil = () => {
     );
   }
 
+  // Menentukan gambar mana yang akan ditampilkan (Preview lokal > Foto DB > Inisial)
+  const displayImage = profile.previewFoto || profile.foto_profil;
+
   return (
     <div className="min-h-screen bg-slate-50/50 pt-28 pb-20 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-5xl mx-auto">
@@ -195,16 +226,51 @@ const Profil = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           
-          {/* Kolom Kiri: Info Profil */}
+          {/* Kolom Kiri: Info Profil & Avatar */}
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm flex flex-col items-center text-center">
-              <div className="w-24 h-24 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-blue-500/25 mb-4">
-                {getInitials()}
+              
+              {/* AREA AVATAR INTERAKTIF */}
+              <div 
+                className="relative w-28 h-28 mb-4 group cursor-pointer"
+                onClick={() => document.getElementById('fotoUpload').click()}
+                title="Klik untuk mengubah foto profil"
+              >
+                {displayImage ? (
+                  <img src={displayImage} alt="Profil" className="w-full h-full rounded-full object-cover shadow-lg border-4 border-white" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-3xl font-black shadow-lg border-4 border-white">
+                    {getInitials()}
+                  </div>
+                )}
+                
+                {/* Overlay gelap saat di-hover */}
+                <div className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <Camera className="w-6 h-6 text-white mb-1" />
+                  <span className="text-white text-[10px] font-bold tracking-wider">Ubah Foto</span>
+                </div>
+                
+                {/* Input File Tersembunyi */}
+                <input 
+                  type="file" 
+                  id="fotoUpload" 
+                  className="hidden" 
+                  accept="image/jpeg, image/png, image/jpg" 
+                  onChange={handleFotoChange} 
+                />
               </div>
+
               <h3 className="text-lg font-bold text-slate-900 leading-tight">
                 {profile.first_name ? `${profile.first_name} ${profile.last_name}`.trim() : profile.username}
               </h3>
               <p className="text-xs text-slate-400 mt-1 font-medium">{profile.email}</p>
+              
+              {profile.fotoFile && (
+                <p className="text-[10px] text-amber-500 font-bold mt-2 bg-amber-50 px-2 py-1 rounded-md">
+                  *Klik 'Simpan Profil' untuk menerapkan foto
+                </p>
+              )}
+
               <div className="w-full border-t border-slate-100 my-5"></div>
               <div className="w-full space-y-3">
                 <div className="flex justify-between items-center text-xs">
@@ -260,10 +326,7 @@ const Profil = () => {
                 <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-blue-600" /> Daftar Alamat
                 </h4>
-                <button 
-                  onClick={() => setIsModalAlamatOpen(true)}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold rounded-lg text-xs transition"
-                >
+                <button onClick={() => setIsModalAlamatOpen(true)} className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold rounded-lg text-xs transition">
                   <Plus className="w-4 h-4" /> Tambah Alamat
                 </button>
               </div>
@@ -311,9 +374,10 @@ const Profil = () => {
           </div>
         </div>
 
-        {/* Modal Tambah Alamat */}
+        {/* Modal Tambah Alamat (Tetap Sama) */}
         {isModalAlamatOpen && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            {/* Konten modal alamat sama seperti sebelumnya... */}
             <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
               <div className="p-5 border-b border-slate-100 flex justify-between items-center">
                 <h4 className="font-extrabold text-slate-900 text-base">Tambah Alamat Baru</h4>
