@@ -13,5 +13,7 @@ urlpatterns = [
     path('api/pembayaran/', include('apps.app_pembayaran.urls')),
     path('api/pengiriman/', include('apps.app_pengiriman.urls')),
 ]
+
+# Mengizinkan akses file media (gambar produk, dll) saat mode development (DEBUG = True)
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

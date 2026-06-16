@@ -23,4 +23,3 @@ class ProdukAdmin(admin.ModelAdmin):
     
     # Memberi warna/style pada kolom is_available
     list_per_page = 20
-

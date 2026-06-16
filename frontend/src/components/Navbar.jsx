@@ -14,7 +14,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check login status on mount and when location changes
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('access_token');
@@ -35,7 +34,6 @@ const Navbar = () => {
     checkAuth();
   }, [location]);
 
-  // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
@@ -57,10 +55,8 @@ const Navbar = () => {
     navigate('/');
   };
 
-  // Helper to check if route is active
   const isActive = (path) => location.pathname === path;
 
-  // Render navigation links
   const navLinks = [
     { name: 'Beranda', path: '/' },
     { name: 'Katalog', path: '/katalog' },
@@ -75,7 +71,6 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-12">
           
-          {/* Brand Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20 group-hover:scale-105 transition duration-300">
               <Laptop className="w-5 h-5" />
@@ -85,7 +80,6 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link 
@@ -105,9 +99,7 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Desktop Right Actions */}
           <div className="hidden md:flex items-center gap-4">
-            {/* Search Mini Input */}
             <div className="relative group">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2 group-focus-within:text-blue-500 transition" />
               <input 
@@ -118,7 +110,6 @@ const Navbar = () => {
               />
             </div>
 
-            {/* Cart Icon */}
             <Link 
               to="/keranjang" 
               className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition relative"
@@ -132,15 +123,15 @@ const Navbar = () => {
               )}
             </Link>
 
-            {/* Auth Dropdown / Buttons */}
             {isLoggedIn ? (
               <div 
                 className="relative border-l border-slate-200 pl-4"
+                onMouseEnter={() => setIsDropdownOpen(true)}
                 onMouseLeave={() => setIsDropdownOpen(false)}
               >
                 <button 
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl transition"
+                  className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl transition focus:outline-none"
                 >
                   <User className="w-4 h-4 text-slate-500" />
                   <span className="text-xs font-bold text-slate-700">Akun Saya</span>
@@ -208,7 +199,6 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-3">
             <Link 
               to="/keranjang" 
@@ -233,7 +223,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Drawer (Sidebar) */}
       {isMenuOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-slate-100 shadow-lg py-4 px-6 space-y-4 animate-in slide-in-from-top-2 duration-200">
           <div className="space-y-2">

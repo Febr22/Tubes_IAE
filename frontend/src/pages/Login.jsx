@@ -11,18 +11,22 @@ const Login = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await api.post('users/login/', formData);
-      localStorage.setItem('access_token', response.data.access);
-      localStorage.setItem('refresh_token', response.data.refresh);
-      alert('Berhasil masuk!');
-      navigate('/'); // Kembali ke Home setelah berhasil login
-    } catch (error) {
-      alert('Email atau Password salah!');
-    }
-  };
-
+      e.preventDefault();
+      try {
+        const response = await api.post('users/login/', formData);
+        localStorage.setItem('access_token', response.data.access);
+        localStorage.setItem('refresh_token', response.data.refresh);
+        
+        alert('Berhasil masuk!');
+        
+        // Ubah dari '/' menjadi '/katalog'
+        navigate('/katalog'); 
+        
+      } catch (error) {
+        alert('Email atau Password salah!');
+      }
+    };
+    
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-6">
       <div className="max-w-md w-full bg-white p-8 rounded-3xl shadow-lg border border-gray-100">

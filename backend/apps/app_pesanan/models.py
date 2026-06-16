@@ -15,7 +15,7 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     catatan = models.TextField(blank=True, null=True)
     
-    # --- Field Pengiriman ---
+    # --- Field Pengiriman (Gabungan Snapshot & Logistik) ---
     alamat_pengiriman = models.TextField(blank=True, null=True)
     provinsi = models.CharField(max_length=100, blank=True, null=True)
     kota = models.CharField(max_length=100, blank=True, null=True)
