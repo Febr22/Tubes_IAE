@@ -1,37 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingCart, User, Search, Menu, X, LogOut, Laptop, ShoppingBag, LayoutDashboard } from 'lucide-react';
+import { ShoppingCart, User, Search, Menu, X, LogOut, Laptop, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import userService from '../services/userService';
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const { cartCount } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem('access_token');
-      setIsLoggedIn(!!token);
-      
-      if (token) {
-        try {
-          const profile = await userService.dapatkanProfil();
-          setIsAdmin(profile.role === 'admin');
-        } catch (err) {
-          console.error("Gagal get role navbar", err);
-          setIsAdmin(false);
-        }
-      } else {
-        setIsAdmin(false);
-      }
-    };
-    checkAuth();
+    const token = localStorage.getItem('access_token');
+    setIsLoggedIn(!!token);
   }, [location]);
 
   useEffect(() => {
@@ -138,46 +121,34 @@ const Navbar = () => {
                 </button>
                 
                 {isDropdownOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <Link 
-                      to="/profil" 
-                      onClick={() => setIsDropdownOpen(false)}
-                      className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold transition ${
-                        isActive('/profil') ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50 hover:text-blue-600'
-                      }`}
-                    >
-                      <User className={`w-4 h-4 ${isActive('/profil') ? 'text-blue-500' : 'text-slate-500'}`} />
-                      Profil Saya
-                    </Link>
-                    {isAdmin && (
+                  <div className="absolute right-0 top-full pt-2 w-48 z-50">
+                    <div className="bg-white border border-slate-100 rounded-2xl shadow-xl py-2 animate-in fade-in slide-in-from-top-2 duration-200">
                       <Link 
-                        to="/admin/dashboard" 
+                        to="/profil" 
                         onClick={() => setIsDropdownOpen(false)}
-                        className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold transition border-t border-slate-50 ${
-                          location.pathname.startsWith('/admin') ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50 hover:text-blue-600'
-                        }`}
+                        className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition"
                       >
-                        <LayoutDashboard className={`w-4 h-4 ${location.pathname.startsWith('/admin') ? 'text-blue-500' : 'text-slate-500'}`} />
-                        Dashboard Admin
+                        <User className="w-4 h-4 text-slate-500" />
+                        Profil Saya
                       </Link>
-                    )}
-                    <Link 
-                      to="/pesanan" 
-                      onClick={() => setIsDropdownOpen(false)}
-                      className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold transition border-t border-slate-50 ${
-                        isActive('/pesanan') ? 'bg-blue-50 text-blue-600' : 'text-slate-700 hover:bg-slate-50 hover:text-blue-600'
-                      }`}
-                    >
-                      <ShoppingBag className={`w-4 h-4 ${isActive('/pesanan') ? 'text-blue-500' : 'text-slate-500'}`} />
-                      Pesanan Saya
-                    </Link>
-                    <button 
-                      onClick={() => { setIsDropdownOpen(false); handleLogout(); }}
-                      className="w-full flex items-center gap-2 text-left px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition border-t border-slate-50"
-                    >
-                      <LogOut className="w-4 h-4 text-rose-500" />
-                      Keluar
-                    </button>
+                      
+                      <Link 
+                        to="/pesanan" 
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition border-t border-slate-50"
+                      >
+                        <ShoppingBag className="w-4 h-4 text-slate-500" />
+                        Pesanan Saya
+                      </Link>
+                      
+                      <button 
+                        onClick={() => { setIsDropdownOpen(false); handleLogout(); }}
+                        className="w-full flex items-center gap-2 text-left px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition border-t border-slate-50"
+                      >
+                        <LogOut className="w-4 h-4 text-rose-500" />
+                        Keluar
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -253,19 +224,6 @@ const Navbar = () => {
                 >
                   Profil Saya
                 </Link>
-                {isAdmin && (
-                  <Link 
-                    to="/admin/dashboard"
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`block py-2.5 px-4 rounded-xl text-sm font-bold transition ${
-                      location.pathname.startsWith('/admin') 
-                        ? 'bg-blue-50 text-blue-600' 
-                        : 'text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    Dashboard Admin
-                  </Link>
-                )}
                 <Link 
                   to="/pesanan"
                   onClick={() => setIsMenuOpen(false)}

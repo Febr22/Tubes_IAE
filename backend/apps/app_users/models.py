@@ -12,6 +12,7 @@ class CustomUser(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='buyer')
     no_telepon = models.CharField(max_length=15, blank=True, null=True)
     alamat_utama = models.TextField(blank=True, null=True) # Tetap dipertahankan untuk kompatibilitas data lama
+    foto_profil = models.ImageField(upload_to='avatars/', null=True, blank=True)
 
     # Karena kita mengganti default User Django, kita harus memberitahu bahwa email adalah username-nya
     USERNAME_FIELD = 'email'
