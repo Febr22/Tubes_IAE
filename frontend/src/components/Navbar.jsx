@@ -12,13 +12,11 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check login status on mount and when location changes
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     setIsLoggedIn(!!token);
   }, [location]);
 
-  // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
@@ -40,10 +38,8 @@ const Navbar = () => {
     navigate('/');
   };
 
-  // Helper to check if route is active
   const isActive = (path) => location.pathname === path;
 
-  // Render navigation links
   const navLinks = [
     { name: 'Beranda', path: '/' },
     { name: 'Katalog', path: '/katalog' },
@@ -58,7 +54,6 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-12">
           
-          {/* Brand Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20 group-hover:scale-105 transition duration-300">
               <Laptop className="w-5 h-5" />
@@ -68,7 +63,6 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link 
@@ -88,9 +82,7 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Desktop Right Actions */}
           <div className="hidden md:flex items-center gap-4">
-            {/* Search Mini Input */}
             <div className="relative group">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2 group-focus-within:text-blue-500 transition" />
               <input 
@@ -101,7 +93,6 @@ const Navbar = () => {
               />
             </div>
 
-            {/* Cart Icon */}
             <Link 
               to="/keranjang" 
               className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition relative"
@@ -115,7 +106,6 @@ const Navbar = () => {
               )}
             </Link>
 
-            {/* Auth Dropdown / Buttons */}
             {isLoggedIn ? (
               <div 
                 className="relative border-l border-slate-200 pl-4"
@@ -130,22 +120,36 @@ const Navbar = () => {
                 </button>
                 
                 {isDropdownOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <Link 
-                      to="/pesanan" 
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition"
-                    >
-                      <ShoppingBag className="w-4 h-4 text-slate-500" />
-                      Pesanan Saya
-                    </Link>
-                    <button 
-                      onClick={() => { setIsDropdownOpen(false); handleLogout(); }}
-                      className="w-full flex items-center gap-2 text-left px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition border-t border-slate-50"
-                    >
-                      <LogOut className="w-4 h-4 text-rose-500" />
-                      Keluar
-                    </button>
+                  <div className="absolute right-0 top-full pt-2 w-48 z-50">
+                    <div className="bg-white border border-slate-100 rounded-2xl shadow-xl py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                      
+                      <Link 
+                        to="/pesanan" 
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition"
+                      >
+                        <ShoppingBag className="w-4 h-4 text-slate-500" />
+                        Pesanan Saya
+                      </Link>
+
+                      <Link 
+                        to="/profil" 
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition"
+                      >
+                        <User className="w-4 h-4 text-slate-500" />
+                        Profil Saya
+                      </Link>
+                      
+                      <button 
+                        onClick={() => { setIsDropdownOpen(false); handleLogout(); }}
+                        className="w-full flex items-center gap-2 text-left px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition border-t border-slate-50"
+                      >
+                        <LogOut className="w-4 h-4 text-rose-500" />
+                        Keluar
+                      </button>
+
+                    </div>
                   </div>
                 )}
               </div>
@@ -167,7 +171,6 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-3">
             <Link 
               to="/keranjang" 
@@ -192,7 +195,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Drawer (Sidebar) */}
       {isMenuOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-slate-100 shadow-lg py-4 px-6 space-y-4 animate-in slide-in-from-top-2 duration-200">
           <div className="space-y-2">

@@ -24,9 +24,12 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
-class UserDetailView(generics.RetrieveAPIView):
+
+# Ubah ke RetrieveUpdateAPIView agar bisa Edit Profil
+class UserDetailView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserSerializer
 
     def get_object(self):
+        # Mengembalikan data user yang sedang memiliki token (yang sedang login)
         return self.request.user

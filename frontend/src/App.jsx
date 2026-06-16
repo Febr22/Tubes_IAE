@@ -14,6 +14,7 @@ import StatusPembayaran from "./pages/StatusPembayaran";
 import Navbar from "./components/Navbar";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { CartProvider } from "./context/CartContext";
+import Profil from './pages/Profil';
 
 function App() {
   return (
@@ -46,6 +47,8 @@ function App() {
 
             {/* Halaman Status Pembayaran Redirect Midtrans */}
             <Route path="/status-pembayaran" element={<StatusPembayaran />} />
+
+            <Route path="/profil" element={<Profil />} />
           </Routes>
         </ErrorBoundary>
       </CartProvider>
@@ -53,4 +56,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;
