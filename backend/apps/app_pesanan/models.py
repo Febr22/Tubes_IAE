@@ -14,6 +14,7 @@ class Order(models.Model):
     total_harga = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     catatan = models.TextField(blank=True, null=True)
+    alamat_pengiriman = models.TextField(blank=True, null=True)
     tanggal_pesan = models.DateTimeField(auto_now_add=True)
 
     class Meta:

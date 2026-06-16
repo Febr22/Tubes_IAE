@@ -109,43 +109,46 @@ const Navbar = () => {
             {isLoggedIn ? (
               <div 
                 className="relative border-l border-slate-200 pl-4"
+                onMouseEnter={() => setIsDropdownOpen(true)}
                 onMouseLeave={() => setIsDropdownOpen(false)}
               >
                 <button 
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl transition"
+                  className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl transition focus:outline-none"
                 >
                   <User className="w-4 h-4 text-slate-500" />
                   <span className="text-xs font-bold text-slate-700">Akun Saya</span>
                 </button>
                 
                 {isDropdownOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <Link 
-                      to="/profil" 
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition"
-                    >
-                      <User className="w-4 h-4 text-slate-500" />
-                      Profil Saya
-                    </Link>
-                    
-                    <Link 
-                      to="/pesanan" 
-                      onClick={() => setIsDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition border-t border-slate-50"
-                    >
-                      <ShoppingBag className="w-4 h-4 text-slate-500" />
-                      Pesanan Saya
-                    </Link>
-                    
-                    <button 
-                      onClick={() => { setIsDropdownOpen(false); handleLogout(); }}
-                      className="w-full flex items-center gap-2 text-left px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition border-t border-slate-50"
-                    >
-                      <LogOut className="w-4 h-4 text-rose-500" />
-                      Keluar
-                    </button>
+                  <div className="absolute right-0 top-full pt-2 w-48 z-50">
+                    <div className="bg-white border border-slate-100 rounded-2xl shadow-xl py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <Link 
+                        to="/profil" 
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition"
+                      >
+                        <User className="w-4 h-4 text-slate-500" />
+                        Profil Saya
+                      </Link>
+                      
+                      <Link 
+                        to="/pesanan" 
+                        onClick={() => setIsDropdownOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition border-t border-slate-50"
+                      >
+                        <ShoppingBag className="w-4 h-4 text-slate-500" />
+                        Pesanan Saya
+                      </Link>
+                      
+                      <button 
+                        onClick={() => { setIsDropdownOpen(false); handleLogout(); }}
+                        className="w-full flex items-center gap-2 text-left px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition border-t border-slate-50"
+                      >
+                        <LogOut className="w-4 h-4 text-rose-500" />
+                        Keluar
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

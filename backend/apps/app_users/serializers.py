@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from .models import Alamat # <-- Import model Alamat
 
 User = get_user_model()
 
@@ -24,3 +25,13 @@ class RegisterSerializer(serializers.ModelSerializer):
             role=validated_data.get('role', 'buyer')
         )
         return user
+
+# --- Tambahan Serializer untuk Alamat ---
+class AlamatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Alamat
+        fields = [
+            'id', 'nama_penerima', 'no_telepon', 'alamat_lengkap', 
+            'kota_kabupaten', 'provinsi', 'kode_pos', 'is_utama', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']

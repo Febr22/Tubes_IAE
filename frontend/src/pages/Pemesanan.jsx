@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { CreditCard, ShoppingBag, ArrowLeft, Loader2, CheckCircle2, AlertTriangle, XCircle, FileText } from "lucide-react";
+import { 
+  CreditCard, ShoppingBag, ArrowLeft, Loader2, CheckCircle2, 
+  AlertTriangle, XCircle, FileText, MapPin, X 
+} from "lucide-react";
 import pembayaranService from "../services/pembayaranService";
+import userService from "../services/userService"; // Pastikan path ini benar
 import { useCart } from "../context/CartContext";
 
 const Pemesanan = () => {
@@ -17,22 +21,27 @@ const Pemesanan = () => {
   const discount = state?.discount || 0;
   const voucherCode = state?.voucherCode || null;
 
+  // State untuk Alamat (Shopee Style)
+  const [daftarAlamat, setDaftarAlamat] = useState([]);
+  const [alamatDipilih, setAlamatDipilih] = useState(null);
+  const [isModalAlamatOpen, setIsModalAlamatOpen] = useState(false);
+  const [loadingAlamat, setLoadingAlamat] = useState(true);
+
   const [catatan, setCatatan] = useState("");
   const [loading, setLoading] = useState(false);
   const [statusTransaksi, setStatusTransaksi] = useState(null); // 'success' | 'pending' | 'error' | 'closed'
   const [detailBayar, setDetailBayar] = useState(null); // Data hasil pengecekan status dari backend
   const [orderId, setOrderId] = useState(null);
 
-
   // URL Dasar untuk Gambar
   const BASE_URL = "http://127.0.0.1:8000";
 
-  // Load Midtrans Snap Script secara dinamis saat halaman dibuka
+  // Load Midtrans Snap Script dan Data Alamat saat halaman dibuka
   useEffect(() => {
+    // 1. Load Midtrans
     const snapScriptUrl = "https://app.sandbox.midtrans.com/snap/snap.js";
     const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY || "SB-Mid-client-A1b2C3d4E5f6G7h8";
 
-    // Cek apakah script sudah ada
     let script = document.querySelector(`script[src="${snapScriptUrl}"]`);
     if (!script) {
       script = document.createElement("script");
@@ -40,6 +49,27 @@ const Pemesanan = () => {
       script.setAttribute("data-client-key", clientKey);
       script.async = true;
       document.body.appendChild(script);
+    }
+
+    // 2. Load Data Alamat
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      const fetchAlamat = async () => {
+        try {
+          const data = await userService.getDaftarAlamat();
+          setDaftarAlamat(data);
+          // Auto-select alamat utama jika ada
+          if (data && data.length > 0) {
+            const utama = data.find(item => item.is_utama);
+            setAlamatDipilih(utama || data[0]);
+          }
+        } catch (error) {
+          console.error("Gagal mengambil data alamat:", error);
+        } finally {
+          setLoadingAlamat(false);
+        }
+      };
+      fetchAlamat();
     }
   }, []);
 
@@ -87,16 +117,20 @@ const Pemesanan = () => {
   }
 
   const subtotal = items.reduce((acc, item) => acc + Number(item.harga) * item.qty, 0);
-  const biayaLayanan = 5000; // Contoh biaya administrasi
+  const biayaLayanan = 5000;
   const total = subtotal - discount + biayaLayanan;
 
   const handleCheckout = async () => {
+    if (!alamatDipilih) {
+      alert("Silakan pilih alamat pengiriman terlebih dahulu.");
+      return;
+    }
+
     setLoading(true);
     setStatusTransaksi(null);
     setDetailBayar(null);
 
     try {
-      // Format items_input sesuai spesifikasi serializer baru
       const itemsInput = items.map(item => ({
         laptop_id: item.id,
         jumlah: item.qty
@@ -106,7 +140,8 @@ const Pemesanan = () => {
       const order = await pembayaranService.buatOrder({
         items_input: itemsInput,
         catatan: catatan,
-        discount: discount // Kirim nominal diskon voucher
+        discount: discount,
+        alamat_pengiriman_id: alamatDipilih.id // Mengirimkan ID alamat ke backend
       });
 
       const newOrderId = order.id;
@@ -122,8 +157,7 @@ const Pemesanan = () => {
           onSuccess: async (result) => {
             console.log("Success:", result);
             setStatusTransaksi("success");
-            clearCart(); // Kosongkan keranjang belanja
-            // Sinkronisasi status ke backend
+            clearCart();
             try {
               const res = await pembayaranService.cekStatusPembayaran(newOrderId);
               setDetailBayar(res);
@@ -134,7 +168,7 @@ const Pemesanan = () => {
           onPending: async (result) => {
             console.log("Pending:", result);
             setStatusTransaksi("pending");
-            clearCart(); // Kosongkan keranjang belanja
+            clearCart();
             try {
               const res = await pembayaranService.cekStatusPembayaran(newOrderId);
               setDetailBayar(res);
@@ -171,7 +205,6 @@ const Pemesanan = () => {
   return (
     <div className="min-h-screen bg-slate-50/50 py-28 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-5xl mx-auto">
-        {/* Header/Back Button */}
         <button
           onClick={() => navigate(-1)}
           className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-800 transition mb-6"
@@ -183,9 +216,9 @@ const Pemesanan = () => {
           Checkout Pesanan
         </h1>
 
-        {/* Tampilan Status Pembayaran jika sudah interaksi dengan Midtrans */}
         {statusTransaksi && (
           <div className="mb-8 p-6 rounded-3xl border bg-white shadow-xl shadow-slate-100/50 animate-in fade-in slide-in-from-top-4 duration-300">
+            {/* Status Transaksi UI - Tetap Sama */}
             {statusTransaksi === "success" && (
               <div className="flex flex-col items-center text-center">
                 <CheckCircle2 className="w-16 h-16 text-emerald-500 mb-4 animate-bounce" />
@@ -283,9 +316,60 @@ const Pemesanan = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Bagian Kiri: List Produk & Catatan */}
           <div className="lg:col-span-2 space-y-6">
             
+            {/* BLOK ALAMAT PENGIRIMAN */}
+            <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+              <div className="flex justify-between items-center border-b border-slate-50 pb-4 mb-4">
+                <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-blue-600" />
+                  Alamat Pengiriman
+                </h3>
+                {!loadingAlamat && (
+                  <button 
+                    type="button"
+                    onClick={() => setIsModalAlamatOpen(true)}
+                    className="text-xs font-bold text-blue-600 hover:text-blue-700 transition"
+                  >
+                    {alamatDipilih ? "Ubah Alamat" : "Pilih Alamat"}
+                  </button>
+                )}
+              </div>
+
+              {loadingAlamat ? (
+                <div className="flex items-center gap-2 text-slate-400 text-xs py-2">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Memuat alamat...
+                </div>
+              ) : alamatDipilih ? (
+                <div className="text-xs text-slate-600 space-y-1">
+                  <div className="flex items-center gap-2 text-slate-800 mb-1.5">
+                    <strong className="font-bold">{alamatDipilih.nama_penerima}</strong>
+                    <span className="text-slate-400">|</span>
+                    <span>{alamatDipilih.no_telepon}</span>
+                    {alamatDipilih.is_utama && (
+                      <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 font-bold rounded text-[9px] uppercase tracking-wider">
+                        Utama
+                      </span>
+                    )}
+                  </div>
+                  <p className="leading-relaxed">
+                    {alamatDipilih.alamat_lengkap}, {alamatDipilih.kota_kabupaten}, {alamatDipilih.provinsi}, {alamatDipilih.kode_pos}
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-4 bg-rose-50/50 rounded-xl border border-rose-100">
+                  <p className="text-xs text-rose-500 mb-3 font-semibold">Kamu belum menentukan alamat pengiriman.</p>
+                  <button
+                    type="button"
+                    onClick={() => setIsModalAlamatOpen(true)}
+                    className="px-4 py-2 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 font-bold rounded-xl text-xs transition"
+                  >
+                    + Tambah / Pilih Alamat
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* Kartu Daftar Produk */}
             <div className="space-y-4">
               {items.map((item) => (
@@ -304,7 +388,6 @@ const Pemesanan = () => {
                       className="w-full h-full object-contain rounded-lg"
                     />
                   </div>
-
                   <div className="flex-grow min-w-0">
                     <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 rounded-lg text-[9px] font-bold uppercase tracking-wider mb-1">
                       {item.prosesor || "Laptop"}
@@ -313,7 +396,6 @@ const Pemesanan = () => {
                     <p className="text-slate-400 text-xs truncate">
                       {item.ram} | {item.storage}
                     </p>
-
                     <div className="flex justify-between items-baseline mt-2.5 pt-2 border-t border-slate-50 text-xs">
                       <div className="text-slate-500">
                         <span>{item.qty} unit</span>
@@ -345,7 +427,6 @@ const Pemesanan = () => {
             </div>
           </div>
 
-          {/* Bagian Kanan: Ringkasan Belanja & Tombol Bayar (Sticky) */}
           <div className="lg:col-span-1 lg:sticky lg:top-28 space-y-6">
             <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
               <h2 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-4 mb-4">
@@ -378,11 +459,14 @@ const Pemesanan = () => {
                 </div>
               </div>
 
-              {/* Tombol Aksi */}
               <button
                 onClick={handleCheckout}
-                disabled={loading}
-                className="w-full mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-slate-300 disabled:to-slate-400 text-white py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-blue-600/10 hover:shadow-blue-600/25 transform active:scale-95 hover:scale-[1.02]"
+                disabled={loading || !alamatDipilih}
+                className={`w-full mt-6 py-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg ${
+                  alamatDipilih 
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-slate-300 disabled:to-slate-400 text-white shadow-blue-600/10 hover:shadow-blue-600/25 transform active:scale-95 hover:scale-[1.02]' 
+                    : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                }`}
               >
                 {loading ? (
                   <>
@@ -396,10 +480,95 @@ const Pemesanan = () => {
                   </>
                 )}
               </button>
+              {!alamatDipilih && (
+                <p className="text-[10px] text-center text-rose-500 mt-2 font-semibold">
+                  *Pilih alamat pengiriman terlebih dahulu
+                </p>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* MODAL PILIH ALAMAT (Shopee Style) */}
+      {isModalAlamatOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-xl max-h-[80vh] flex flex-col shadow-2xl animate-in fade-in zoom-in duration-200">
+            
+            {/* Header Modal */}
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+              <h4 className="font-extrabold text-slate-900 text-base">Pilih Alamat Pengiriman</h4>
+              <button onClick={() => setIsModalAlamatOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Konten Daftar Alamat */}
+            <div className="p-6 overflow-y-auto flex-1 space-y-4">
+              {daftarAlamat.length === 0 ? (
+                <div className="text-center py-8 text-slate-500 text-sm">
+                  Kamu belum memiliki alamat tersimpan.
+                </div>
+              ) : (
+                daftarAlamat.map((item) => (
+                  <div 
+                    key={item.id}
+                    onClick={() => {
+                      setAlamatDipilih(item);
+                      setIsModalAlamatOpen(false);
+                    }}
+                    className={`p-4 rounded-2xl border-2 text-xs text-slate-600 cursor-pointer transition flex items-start gap-3 ${
+                      alamatDipilih?.id === item.id 
+                        ? 'border-blue-500 bg-blue-50/20' 
+                        : 'border-slate-100 hover:border-slate-200 bg-white'
+                    }`}
+                  >
+                    <input 
+                      type="radio" 
+                      checked={alamatDipilih?.id === item.id}
+                      onChange={() => {}} // Di-handle oleh onClick induk div
+                      className="mt-0.5 text-blue-600 focus:ring-blue-500"
+                    />
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center gap-2 text-slate-800">
+                        <strong className="font-bold">{item.nama_penerima}</strong>
+                        <span className="text-slate-400">|</span>
+                        <span>{item.no_telepon}</span>
+                        {item.is_utama && (
+                          <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 font-bold rounded text-[9px]">UTAMA</span>
+                        )}
+                      </div>
+                      <p className="leading-relaxed">
+                        {item.alamat_lengkap}, {item.kota_kabupaten}, {item.provinsi}, {item.kode_pos}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
+
+              {/* Tombol Tambah Alamat Baru di Dalam Modal */}
+              <button 
+                onClick={() => navigate('/profil')} 
+                className="w-full py-3 border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 rounded-2xl text-center text-xs font-bold text-slate-500 transition"
+              >
+                + Tambah Alamat Baru (Kelola di Profil)
+              </button>
+            </div>
+
+            {/* Footer Modal */}
+            <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 rounded-b-3xl">
+              <button 
+                onClick={() => setIsModalAlamatOpen(false)}
+                className="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl transition"
+              >
+                Tutup
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

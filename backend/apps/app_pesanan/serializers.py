@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Order, OrderItem
 from apps.app_katalog.models import Produk
+from apps.app_users.models import Alamat # <-- Import model Alamat dari app_users
 
 class OrderItemSerializer(serializers.ModelSerializer):
     laptop_nama = serializers.SerializerMethodField()
@@ -45,11 +46,19 @@ class OrderSerializer(serializers.ModelSerializer):
     laptop_id = serializers.IntegerField(write_only=True, required=False)
     jumlah = serializers.IntegerField(write_only=True, min_value=1, required=False)
     discount = serializers.IntegerField(write_only=True, required=False, default=0)
+    
+    # Input ID Alamat dari Frontend
+    alamat_pengiriman_id = serializers.IntegerField(write_only=True, required=True) # <-- TAMBAHAN
 
     class Meta:
         model = Order
-        fields = ['id', 'pembeli_id', 'total_harga', 'status', 'catatan', 'tanggal_pesan', 'items', 'items_input', 'laptop_id', 'jumlah', 'discount', 'payment_info']
-        read_only_fields = ['pembeli_id', 'status', 'total_harga', 'tanggal_pesan']
+        fields = [
+            'id', 'pembeli_id', 'total_harga', 'status', 'catatan', 'alamat_pengiriman', 
+            'alamat_pengiriman_id', 'tanggal_pesan', 'items', 'items_input', 'laptop_id', 
+            'jumlah', 'discount', 'payment_info'
+        ]
+        # Pastikan alamat_pengiriman menjadi read_only agar tidak ditimpa langsung dari request
+        read_only_fields = ['pembeli_id', 'status', 'total_harga', 'tanggal_pesan', 'alamat_pengiriman']
 
     def get_payment_info(self, obj):
         from apps.app_pembayaran.models import Pembayaran
@@ -74,6 +83,7 @@ class OrderSerializer(serializers.ModelSerializer):
         laptop_id = validated_data.pop('laptop_id', None)
         jumlah = validated_data.pop('jumlah', None)
         discount = validated_data.pop('discount', 0)
+        alamat_id = validated_data.pop('alamat_pengiriman_id') # <-- Ambil ID Alamat
         
         items_to_process = []
         if items_input:
@@ -85,6 +95,17 @@ class OrderSerializer(serializers.ModelSerializer):
             
         if not items_to_process:
             raise serializers.ValidationError("Daftar produk pesanan kosong.")
+
+        pembeli_id = self.context['request'].user.id if self.context.get('request') and self.context['request'].user else 1
+
+        # --- LOGIKA SNAPSHOT ALAMAT ---
+        try:
+            # Cari alamat berdasarkan ID dan pastikan alamat tersebut memang milik pembeli (untuk keamanan)
+            alamat_obj = Alamat.objects.get(id=alamat_id, user_id=pembeli_id)
+            # Format alamat menjadi teks rapi (Snapshot)
+            teks_alamat = f"{alamat_obj.nama_penerima} | {alamat_obj.no_telepon}\n{alamat_obj.alamat_lengkap}, {alamat_obj.kota_kabupaten}, {alamat_obj.provinsi}, {alamat_obj.kode_pos}"
+        except Alamat.DoesNotExist:
+            raise serializers.ValidationError({"alamat_pengiriman_id": "Alamat tidak valid atau bukan milik Anda."})
 
         total_harga = 0
         resolved_items = []
@@ -112,14 +133,14 @@ class OrderSerializer(serializers.ModelSerializer):
         total_harga = total_harga - discount
         if total_harga < 0:
             total_harga = 0
-
-        pembeli_id = self.context['request'].user.id if self.context.get('request') and self.context['request'].user else 1
         
+        # Buat Order dengan menyisipkan teks alamat
         order = Order.objects.create(
             pembeli_id=pembeli_id,
             total_harga=total_harga,
             status='pending',
-            catatan=validated_data.get('catatan', '')
+            catatan=validated_data.get('catatan', ''),
+            alamat_pengiriman=teks_alamat # <-- Simpan Teks Snapshot
         )
         
         for item in resolved_items:
@@ -131,4 +152,3 @@ class OrderSerializer(serializers.ModelSerializer):
             )
             
         return order
-
