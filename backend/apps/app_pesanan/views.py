@@ -2,6 +2,7 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from .models import Order
 from .serializers import OrderSerializer
+from apps.app_users.permissions import IsAdminRole
 
 class OrderListCreateView(generics.ListCreateAPIView):
     """
@@ -25,4 +26,21 @@ class OrderDetailView(generics.RetrieveAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+
+class AdminOrderListView(generics.ListAPIView):
+    """
+    Endpoint untuk admin melihat semua daftar pesanan di platform.
+    """
+    queryset = Order.objects.all().order_by('-tanggal_pesan')
+    serializer_class = OrderSerializer
+    permission_classes = [IsAdminRole]
+
+class AdminOrderDetailUpdateView(generics.RetrieveUpdateAPIView):
+    """
+    Endpoint untuk admin mengupdate status dan resi pesanan.
+    """
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAdminRole]
     lookup_field = 'id'

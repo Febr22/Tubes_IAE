@@ -12,6 +12,9 @@ import Cart from "./pages/Cart";
 import Pesanan from "./pages/Pesanan";
 import StatusPembayaran from "./pages/StatusPembayaran";
 import Profil from "./pages/Profil";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminProducts from "./pages/admin/AdminProducts";
 import Navbar from "./components/Navbar";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { CartProvider } from "./context/CartContext";
@@ -50,6 +53,11 @@ function App() {
             
             {/* Halaman Profil & Alamat Pengiriman */}
             <Route path="/profil" element={<Profil />} />
+
+            {/* Halaman Khusus Admin */}
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/orders" element={<AdminOrders />} />
+            <Route path="/admin/products" element={<AdminProducts />} />
           </Routes>
         </ErrorBoundary>
       </CartProvider>
