@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 
 class Kategori(models.Model):
     nama = models.CharField(max_length=100)
@@ -31,6 +32,17 @@ class Produk(models.Model):
     is_available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.nama)
+            slug = base_slug
+            counter = 1
+            while Produk.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.nama
