@@ -48,8 +48,12 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'pembeli_id', 'total_harga', 'status', 'catatan', 'tanggal_pesan', 'items', 'items_input', 'laptop_id', 'jumlah', 'discount', 'payment_info']
-        read_only_fields = ['pembeli_id', 'status', 'total_harga', 'tanggal_pesan']
+        fields = [
+            'id', 'pembeli_id', 'total_harga', 'status', 'catatan', 'tanggal_pesan', 
+            'items', 'items_input', 'laptop_id', 'jumlah', 'discount', 'payment_info',
+            'alamat_pengiriman', 'provinsi', 'kota', 'kurir', 'layanan', 'ongkos_kirim', 'resi'
+        ]
+        read_only_fields = ['pembeli_id', 'status', 'total_harga', 'tanggal_pesan', 'resi']
 
     def get_payment_info(self, obj):
         from apps.app_pembayaran.models import Pembayaran
@@ -119,7 +123,13 @@ class OrderSerializer(serializers.ModelSerializer):
             pembeli_id=pembeli_id,
             total_harga=total_harga,
             status='pending',
-            catatan=validated_data.get('catatan', '')
+            catatan=validated_data.get('catatan', ''),
+            alamat_pengiriman=validated_data.get('alamat_pengiriman', ''),
+            provinsi=validated_data.get('provinsi', ''),
+            kota=validated_data.get('kota', ''),
+            kurir=validated_data.get('kurir', ''),
+            layanan=validated_data.get('layanan', ''),
+            ongkos_kirim=validated_data.get('ongkos_kirim', 0)
         )
         
         for item in resolved_items:

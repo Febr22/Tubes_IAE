@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load .env file
-load_dotenv(os.path.join(BASE_DIR, '.env'))
+load_dotenv(os.path.join(BASE_DIR, '.env'), override=True)
 
 
 # Quick-start development settings - unsuitable for production
@@ -251,3 +251,6 @@ JAZZMIN_UI_TWEAKS = {
 MIDTRANS_SERVER_KEY = os.getenv('MIDTRANS_SERVER_KEY')
 MIDTRANS_CLIENT_KEY = os.getenv('MIDTRANS_CLIENT_KEY')
 MIDTRANS_IS_PRODUCTION = os.getenv('MIDTRANS_IS_PRODUCTION', 'False').lower() == 'true'
+
+# --- RAJAONGKIR CONFIGURATION ---
+RAJAONGKIR_API_KEY = os.getenv('RAJAONGKIR_API_KEY')

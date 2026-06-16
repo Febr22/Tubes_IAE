@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { CreditCard, ShoppingBag, ArrowLeft, Loader2, CheckCircle2, AlertTriangle, XCircle, FileText } from "lucide-react";
+import { CreditCard, ShoppingBag, ArrowLeft, Loader2, CheckCircle2, AlertTriangle, XCircle, FileText, Truck } from "lucide-react";
 import pembayaranService from "../services/pembayaranService";
 import { useCart } from "../context/CartContext";
 
@@ -23,16 +23,28 @@ const Pemesanan = () => {
   const [detailBayar, setDetailBayar] = useState(null); // Data hasil pengecekan status dari backend
   const [orderId, setOrderId] = useState(null);
 
+  // State Pengiriman
+  const [lokasiData, setLokasiData] = useState([]);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [lokasiTerpilih, setLokasiTerpilih] = useState(null);
+  
+  const [alamatLengkap, setAlamatLengkap] = useState("");
+  const [kurir, setKurir] = useState("");
+  const [layananList, setLayananList] = useState([]);
+  const [layananPilih, setLayananPilih] = useState(null);
+  const [ongkir, setOngkir] = useState(0);
+  const [loadingOngkir, setLoadingOngkir] = useState(false);
 
   // URL Dasar untuk Gambar
   const BASE_URL = "http://127.0.0.1:8000";
 
-  // Load Midtrans Snap Script secara dinamis saat halaman dibuka
+  // Load Midtrans Snap Script
   useEffect(() => {
     const snapScriptUrl = "https://app.sandbox.midtrans.com/snap/snap.js";
-    const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY || "SB-Mid-client-A1b2C3d4E5f6G7h8";
+    const clientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY || "Mid-client-So7Wzz5nA-YQFaaG";
 
-    // Cek apakah script sudah ada
     let script = document.querySelector(`script[src="${snapScriptUrl}"]`);
     if (!script) {
       script = document.createElement("script");
@@ -42,6 +54,77 @@ const Pemesanan = () => {
       document.body.appendChild(script);
     }
   }, []);
+
+  // Debounce search lokasi
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchKeyword.length >= 3) {
+        setSearchLoading(true);
+        setSearchError("");
+        try {
+          const res = await pembayaranService.cariLokasi(searchKeyword);
+          if(res.data) setLokasiData(res.data);
+        } catch (err) {
+          console.error("Gagal load lokasi", err);
+          setSearchError(err.error || err.detail || err.message || "Gagal menghubungi server");
+        } finally {
+          setSearchLoading(false);
+        }
+      } else {
+        setLokasiData([]);
+        setSearchError("");
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchKeyword]);
+
+  // Fetch Ongkir ketika lokasi dan kurir berubah
+  useEffect(() => {
+    if (lokasiTerpilih && kurir) {
+      const fetchOngkir = async () => {
+        setLoadingOngkir(true);
+        setLayananList([]);
+        setLayananPilih(null);
+        setOngkir(0);
+        try {
+          const res = await pembayaranService.cekOngkir({
+            destination: lokasiTerpilih.id,
+            courier: kurir
+          });
+          if (res.results && res.results.length > 0) {
+            // Komerce mereturn response sedikit berbeda
+            // Misalnya results: [{cost: 15000, service: 'REG', ...}]
+            // Tapi kita akan handle jika bentuknya mirip
+            const costsData = res.results[0].costs || res.results;
+            setLayananList(costsData);
+          }
+        } catch (err) {
+          console.error("Gagal cek ongkir", err);
+        } finally {
+          setLoadingOngkir(false);
+        }
+      };
+      fetchOngkir();
+    }
+  }, [lokasiTerpilih, kurir]);
+
+  const handleLayananChange = (e) => {
+    const selected = layananList.find(l => l.service === e.target.value);
+    setLayananPilih(selected);
+    if (selected) {
+      // Struktur Komerce mungkin langsung di selected.cost atau di array
+      if (selected.cost !== undefined && !Array.isArray(selected.cost)) {
+        setOngkir(selected.cost);
+      } else if (selected.cost && selected.cost.length > 0) {
+        setOngkir(selected.cost[0].value);
+      } else {
+        setOngkir(0);
+      }
+    } else {
+      setOngkir(0);
+    }
+  };
 
   // Cek apakah user sudah login
   const token = localStorage.getItem("access_token");
@@ -65,7 +148,6 @@ const Pemesanan = () => {
     );
   }
 
-  // Cek apakah data produk tersedia
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 font-sans">
@@ -87,73 +169,74 @@ const Pemesanan = () => {
   }
 
   const subtotal = items.reduce((acc, item) => acc + Number(item.harga) * item.qty, 0);
-  const biayaLayanan = 5000; // Contoh biaya administrasi
-  const total = subtotal - discount + biayaLayanan;
+  const biayaLayanan = 5000;
+  const total = subtotal - discount + biayaLayanan + ongkir;
 
   const handleCheckout = async () => {
+    if (!lokasiTerpilih || !alamatLengkap || !kurir || !layananPilih) {
+      alert("Mohon lengkapi data alamat pengiriman dan pilih kurir.");
+      return;
+    }
+
     setLoading(true);
     setStatusTransaksi(null);
     setDetailBayar(null);
 
     try {
-      // Format items_input sesuai spesifikasi serializer baru
       const itemsInput = items.map(item => ({
         laptop_id: item.id,
         jumlah: item.qty
       }));
 
-      // 1. Buat Order Baru di Backend
+      // Memisah nama lokasi jika formatnya "Kecamatan, Kota, Provinsi"
+      const lokasiNames = lokasiTerpilih.name ? lokasiTerpilih.name.split(', ') : ["", ""];
+      const kotaName = lokasiNames.length > 1 ? lokasiNames[1] : lokasiTerpilih.name;
+      const provinsiName = lokasiNames.length > 2 ? lokasiNames[2] : "";
+
       const order = await pembayaranService.buatOrder({
         items_input: itemsInput,
         catatan: catatan,
-        discount: discount // Kirim nominal diskon voucher
+        discount: discount,
+        alamat_pengiriman: alamatLengkap,
+        provinsi: provinsiName,
+        kota: kotaName,
+        kurir: kurir,
+        layanan: layananPilih.service,
+        ongkos_kirim: ongkir
       });
 
       const newOrderId = order.id;
       setOrderId(newOrderId);
 
-      // 2. Minta Token Snap dari Backend berdasarkan orderId
       const snapData = await pembayaranService.dapatkanSnapToken(newOrderId);
       const snapToken = snapData.snap_token;
 
-      // 3. Panggil Popup Midtrans Snap
       if (window.snap) {
         window.snap.pay(snapToken, {
           onSuccess: async (result) => {
-            console.log("Success:", result);
             setStatusTransaksi("success");
-            clearCart(); // Kosongkan keranjang belanja
-            // Sinkronisasi status ke backend
+            clearCart();
             try {
               const res = await pembayaranService.cekStatusPembayaran(newOrderId);
               setDetailBayar(res);
-            } catch (err) {
-              console.error("Gagal update status lokal:", err);
-            }
+            } catch (err) { console.error(err); }
           },
           onPending: async (result) => {
-            console.log("Pending:", result);
             setStatusTransaksi("pending");
-            clearCart(); // Kosongkan keranjang belanja
+            clearCart();
             try {
               const res = await pembayaranService.cekStatusPembayaran(newOrderId);
               setDetailBayar(res);
-            } catch (err) {
-              console.error("Gagal update status lokal:", err);
-            }
+            } catch (err) { console.error(err); }
           },
           onError: async (result) => {
-            console.error("Error:", result);
             setStatusTransaksi("error");
             try {
               const res = await pembayaranService.cekStatusPembayaran(newOrderId);
               setDetailBayar(res);
-            } catch (err) {
-              console.error("Gagal update status lokal:", err);
-            }
+            } catch (err) { console.error(err); }
           },
           onClose: () => {
-            console.log("Customer closed the popup without finishing the payment");
             setStatusTransaksi("closed");
           },
         });
@@ -162,7 +245,19 @@ const Pemesanan = () => {
       }
     } catch (error) {
       console.error("Proses checkout gagal:", error);
-      alert(error.error || "Gagal memproses checkout. Silakan coba lagi.");
+      let errorMsg = "Gagal memproses checkout. Silakan coba lagi.";
+      if (typeof error === 'string') {
+          errorMsg = error;
+      } else if (error && typeof error === 'object') {
+          if (error.error) errorMsg = error.error;
+          else if (error.detail) errorMsg = error.detail;
+          else if (Object.keys(error).length > 0) {
+              // Extract validation errors
+              const firstKey = Object.keys(error)[0];
+              errorMsg = `${firstKey}: ${error[firstKey]}`;
+          }
+      }
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -171,7 +266,6 @@ const Pemesanan = () => {
   return (
     <div className="min-h-screen bg-slate-50/50 py-28 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-5xl mx-auto">
-        {/* Header/Back Button */}
         <button
           onClick={() => navigate(-1)}
           className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-800 transition mb-6"
@@ -183,7 +277,6 @@ const Pemesanan = () => {
           Checkout Pesanan
         </h1>
 
-        {/* Tampilan Status Pembayaran jika sudah interaksi dengan Midtrans */}
         {statusTransaksi && (
           <div className="mb-8 p-6 rounded-3xl border bg-white shadow-xl shadow-slate-100/50 animate-in fade-in slide-in-from-top-4 duration-300">
             {statusTransaksi === "success" && (
@@ -283,10 +376,8 @@ const Pemesanan = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Bagian Kiri: List Produk & Catatan */}
           <div className="lg:col-span-2 space-y-6">
             
-            {/* Kartu Daftar Produk */}
             <div className="space-y-4">
               {items.map((item) => (
                 <div 
@@ -329,7 +420,98 @@ const Pemesanan = () => {
               ))}
             </div>
 
-            {/* Form Catatan */}
+            {/* Form Pengiriman */}
+            <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <Truck className="w-5 h-5 text-slate-500" />
+                <h3 className="text-sm font-bold text-slate-800">Alamat Pengiriman & Kurir</h3>
+              </div>
+              <div className="space-y-4">
+                <textarea
+                  value={alamatLengkap}
+                  onChange={(e) => setAlamatLengkap(e.target.value)}
+                  placeholder="Alamat lengkap (Nama jalan, RT/RW, Patokan)..."
+                  rows={2}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-xs text-slate-600 transition placeholder:text-slate-400"
+                />
+                
+                <div className="relative">
+                  <div className="flex gap-2 items-center w-full px-4 py-3 rounded-xl border border-slate-200 bg-white">
+                    <input 
+                      type="text"
+                      placeholder="Cari Kecamatan atau Kota..."
+                      value={lokasiTerpilih ? lokasiTerpilih.name : searchKeyword}
+                      onChange={(e) => {
+                        setLokasiTerpilih(null);
+                        setSearchKeyword(e.target.value);
+                      }}
+                      className="w-full focus:outline-none text-xs text-slate-600"
+                    />
+                    {searchLoading && <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />}
+                  </div>
+                  
+                  {!lokasiTerpilih && searchKeyword.length >= 3 && lokasiData.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                      {lokasiData.map((lokasi) => (
+                        <div 
+                          key={lokasi.id}
+                          className="px-4 py-3 text-xs text-slate-700 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0"
+                          onClick={() => {
+                            setLokasiTerpilih(lokasi);
+                            setSearchKeyword("");
+                            setLokasiData([]);
+                            setOngkir(0);
+                            setLayananPilih(null);
+                          }}
+                        >
+                          {lokasi.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {!lokasiTerpilih && searchKeyword.length >= 3 && !searchLoading && lokasiData.length === 0 && !searchError && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-xs text-slate-500 text-center">
+                      Tidak ada hasil ditemukan
+                    </div>
+                  )}
+                  {searchError && (
+                    <div className="absolute z-10 w-full mt-1 bg-rose-50 border border-rose-200 rounded-xl shadow-lg p-3 text-xs font-bold text-rose-600 text-center">
+                      {searchError}
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <select 
+                    value={kurir} 
+                    onChange={(e) => { setKurir(e.target.value); setOngkir(0); }}
+                    disabled={!lokasiTerpilih}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-xs text-slate-600 disabled:opacity-50"
+                  >
+                    <option value="">-- Pilih Kurir --</option>
+                    <option value="jne">JNE</option>
+                    <option value="sicepat">SiCepat</option>
+                    <option value="jnt">J&T Express</option>
+                  </select>
+
+                  <select 
+                    value={layananPilih?.service || ""} 
+                    onChange={handleLayananChange}
+                    disabled={!kurir || loadingOngkir || layananList.length === 0}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 text-xs text-slate-600 disabled:opacity-50"
+                  >
+                    <option value="">{loadingOngkir ? "Memuat..." : "-- Pilih Layanan --"}</option>
+                    {layananList.map(l => (
+                      <option key={l.service} value={l.service}>
+                        {l.service} - Rp {l.cost !== undefined && !Array.isArray(l.cost) ? l.cost.toLocaleString("id-ID") : (l.cost && l.cost.length > 0 ? l.cost[0].value.toLocaleString("id-ID") : 0)} 
+                        {l.estimation || l.etd ? ` (${l.estimation || l.etd})` : (l.cost && l.cost.length > 0 && l.cost[0].etd ? ` (${l.cost[0].etd})` : "")}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
                 <FileText className="w-5 h-5 text-slate-500" />
@@ -345,7 +527,6 @@ const Pemesanan = () => {
             </div>
           </div>
 
-          {/* Bagian Kanan: Ringkasan Belanja & Tombol Bayar (Sticky) */}
           <div className="lg:col-span-1 lg:sticky lg:top-28 space-y-6">
             <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
               <h2 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-4 mb-4">
@@ -363,6 +544,14 @@ const Pemesanan = () => {
                     <span>- Rp {discount.toLocaleString("id-ID")}</span>
                   </div>
                 )}
+                
+                {ongkir > 0 && (
+                  <div className="flex justify-between">
+                    <span>Ongkos Kirim ({kurir.toUpperCase()} {layananPilih?.service})</span>
+                    <span className="font-semibold text-slate-800">Rp {ongkir.toLocaleString("id-ID")}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between">
                   <span>Biaya Layanan</span>
                   <span className="font-semibold text-slate-800">Rp {biayaLayanan.toLocaleString("id-ID")}</span>
@@ -378,7 +567,6 @@ const Pemesanan = () => {
                 </div>
               </div>
 
-              {/* Tombol Aksi */}
               <button
                 onClick={handleCheckout}
                 disabled={loading}

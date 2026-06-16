@@ -168,7 +168,17 @@ class GenerateSnapTokenView(APIView):
                 "name": "Biaya Layanan"
             })
             
-            gross_amount = total_items_price - max(0, discrepancy) + biaya_layanan
+            # Tambahkan Ongkos Kirim
+            ongkos_kirim = int(order.ongkos_kirim) if order.ongkos_kirim else 0
+            if ongkos_kirim > 0:
+                item_details.append({
+                    "id": "ongkos-kirim",
+                    "price": ongkos_kirim,
+                    "quantity": 1,
+                    "name": f"Ongkos Kirim ({order.kurir.upper() if order.kurir else 'Kurir'})"
+                })
+            
+            gross_amount = total_items_price - max(0, discrepancy) + biaya_layanan + ongkos_kirim
 
             # Detail Pelanggan dari User login
             user = request.user

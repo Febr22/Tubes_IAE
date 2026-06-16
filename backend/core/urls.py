@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/katalog/', include('apps.app_katalog.urls')),
     path('api/pesanan/', include('apps.app_pesanan.urls')),
     path('api/pembayaran/', include('apps.app_pembayaran.urls')),
+    path('api/pengiriman/', include('apps.app_pengiriman.urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
