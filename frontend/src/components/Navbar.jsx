@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import NotificationBell from './NotificationBell';
 import { ShoppingCart, User, Search, Menu, X, LogOut, Laptop, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
@@ -92,7 +93,7 @@ const Navbar = () => {
                 className="pl-9 pr-3 py-1.5 w-36 focus:w-48 bg-slate-100/80 hover:bg-slate-100 focus:bg-white border border-transparent focus:border-slate-200 rounded-xl text-xs text-slate-700 outline-none transition-all duration-300"
               />
             </div>
-
+            {isLoggedIn && <NotificationBell />}
             <Link 
               to="/keranjang" 
               className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition relative"

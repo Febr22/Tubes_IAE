@@ -24,6 +24,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = [
+    'daphne',
     'jazzmin',
     # --- Bawaan Django ---
     'django.contrib.admin',
@@ -36,6 +37,7 @@ INSTALLED_APPS = [
     # --- Library Pihak Ketiga ---
     'rest_framework',
     'corsheaders',
+    'channels',
 
     # --- Microservices Sistem Jual Beli Laptop ---
     'apps.app_users',
@@ -234,3 +236,11 @@ RAJAONGKIR_API_KEY = os.getenv('RAJAONGKIR_API_KEY')
 LOGIN_REDIRECT_URL = '/katalog/'
 # Arahkan kembali ke login setelah logout
 LOGOUT_REDIRECT_URL = 'http://localhost:5173/'
+# --- DJANGO CHANNELS (WebSocket) ---
+ASGI_APPLICATION = 'core.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}

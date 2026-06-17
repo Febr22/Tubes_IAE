@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/pesanan/', include('apps.app_pesanan.urls')),
     path('api/pembayaran/', include('apps.app_pembayaran.urls')),
     path('api/pengiriman/', include('apps.app_pengiriman.urls')),
+    path('api/notifikasi/', include('apps.app_notifikasi.urls')),
 ]
 
 # Mengizinkan akses file media (gambar produk, dll) saat mode development (DEBUG = True)

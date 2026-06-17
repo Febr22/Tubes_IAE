@@ -1,3 +1,4 @@
+import { NotificationProvider } from "./context/NotificationContext";
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
@@ -23,6 +24,7 @@ function App() {
   return (
     <Router>
       <CartProvider>
+        <NotificationProvider>
         <ErrorBoundary>
           <Navbar />
           <Routes>
@@ -60,6 +62,7 @@ function App() {
             <Route path="/admin/products" element={<AdminProducts />} />
           </Routes>
         </ErrorBoundary>
+        </NotificationProvider>
       </CartProvider>
     </Router>
   );

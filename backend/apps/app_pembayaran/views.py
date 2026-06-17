@@ -1,3 +1,4 @@
+from apps.app_notifikasi.services import kirim_notifikasi, kirim_notifikasi_ke_semua_admin
 import hashlib
 import time
 import logging
@@ -24,11 +25,7 @@ def get_midtrans_snap_client():
     )
 
 def update_payment_and_order_status(midtrans_order_id, transaction_status, payment_type, transaction_id):
-    """
-    Helper untuk memperbarui status Pembayaran dan Order berdasarkan respon Midtrans.
-    """
     try:
-        # Format midtrans_order_id: ORDER-id_order-timestamp
         parts = midtrans_order_id.split('-')
         if len(parts) >= 2 and parts[0] == 'ORDER':
             order_id = int(parts[1])
@@ -39,10 +36,7 @@ def update_payment_and_order_status(midtrans_order_id, transaction_status, payme
         logger.error(f"Gagal memparsing order_id dari {midtrans_order_id}: {str(e)}")
         return None
 
-    # Cari atau buat record Pembayaran
     pembayaran, created = Pembayaran.objects.get_or_create(order_id=order_id)
-    
-    # Cari record Order
     try:
         order = Order.objects.get(id=order_id)
     except Order.DoesNotExist:
@@ -54,17 +48,32 @@ def update_payment_and_order_status(midtrans_order_id, transaction_status, payme
     pembayaran.metode_pembayaran_midtrans = payment_type
     pembayaran.status_transaksi = transaction_status
 
-    # Logika penentuan status
     if transaction_status in ['capture', 'settlement']:
         pembayaran.is_lunas = True
         if order:
             order.status = 'diproses'
             order.save()
+            # 🔔 Notif sukses bayar
+            kirim_notifikasi(
+                user_id=order.pembeli_id,
+                judul="Pembayaran Berhasil ✅",
+                pesan=f"Pembayaran pesanan #{order.id} berhasil. Pesanan akan segera diproses.",
+            )
+            kirim_notifikasi_ke_semua_admin(
+                judul="Pembayaran Masuk",
+                pesan=f"Pesanan #{order.id} sudah dibayar lunas.",
+            )
     elif transaction_status in ['deny', 'cancel', 'expire']:
         pembayaran.is_lunas = False
         if order:
             order.status = 'dibatalkan'
             order.save()
+            # 🔔 Notif gagal bayar
+            kirim_notifikasi(
+                user_id=order.pembeli_id,
+                judul="Pembayaran Gagal ❌",
+                pesan=f"Pembayaran pesanan #{order.id} {transaction_status}. Silakan coba lagi.",
+            )
     elif transaction_status == 'pending':
         pembayaran.is_lunas = False
         if order:
