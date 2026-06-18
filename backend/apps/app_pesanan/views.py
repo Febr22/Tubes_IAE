@@ -59,11 +59,15 @@ class AdminOrderDetailUpdateView(generics.RetrieveUpdateAPIView):
     lookup_field = 'id'
 
     def perform_update(self, serializer):
+        print("VALIDATED DATA =", serializer.validated_data)
+
         old_status = serializer.instance.status
         old_resi = serializer.instance.resi
+
         order = serializer.save()
 
-        # 🔔 Publish event hanya kalau ada perubahan status / resi baru diisi
+        print("STATUS SESUDAH SAVE =", order.status)
+
         if order.status != old_status:
             label = STATUS_LABEL.get(order.status, order.status)
             kirim_notifikasi(

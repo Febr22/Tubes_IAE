@@ -59,7 +59,7 @@ class OrderSerializer(serializers.ModelSerializer):
             'alamat_pengiriman', 'alamat_pengiriman_id', 'provinsi', 'kota', 
             'kurir', 'layanan', 'ongkos_kirim', 'resi'
         ]
-        read_only_fields = ['pembeli_id', 'status', 'total_harga', 'tanggal_pesan', 'resi', 'alamat_pengiriman']
+        read_only_fields = ['pembeli_id', 'total_harga', 'tanggal_pesan', 'alamat_pengiriman']
 
     def get_payment_info(self, obj):
         from apps.app_pembayaran.models import Pembayaran
