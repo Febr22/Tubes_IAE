@@ -1,3 +1,4 @@
+from decimal import Decimal
 from rest_framework import serializers
 from .models import Order, OrderItem
 from apps.app_katalog.models import Produk
@@ -119,7 +120,7 @@ class OrderSerializer(serializers.ModelSerializer):
             total_harga += produk.harga * item['jumlah']
             resolved_items.append({'produk': produk, 'jumlah': item['jumlah'], 'harga': produk.harga})
 
-        total_harga = (total_harga - discount) + float(ongkos_kirim)
+        total_harga = (total_harga - Decimal(discount)) + Decimal(str(ongkos_kirim))
         
         # Buat Order dengan menggabungkan snapshot dan logistik
         order = Order.objects.create(
