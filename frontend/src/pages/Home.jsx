@@ -1,7 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Home = () => {
+  const navigate = useNavigate();
   const laptopHeroImg = "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=600&auto=format&fit=crop"; 
   const studentGridImgs = [
     "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=200&h=200&auto=format&fit=crop",
@@ -29,9 +30,12 @@ const Home = () => {
               UnivStore adalah ritel resmi penyedia perangkat komputasi premium. Dapatkan laptop original dengan garansi resmi dan dukungan teknis khusus untuk produktivitas Anda.
             </p>
             <div className="flex gap-4 pt-4">
-              <button className={`px-8 py-3 ${navyColor} text-white font-bold rounded-lg hover:bg-opacity-90 transition`}>
+              <Link
+                to="/katalog"
+                className={`px-8 py-3 ${navyColor} text-white font-bold rounded-lg hover:bg-opacity-90 transition rounded-lg`}
+              >
                 Belanja Sekarang
-              </button>
+              </Link>
             </div>
           </div>
           <div className="relative p-6">

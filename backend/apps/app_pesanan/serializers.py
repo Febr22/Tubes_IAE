@@ -137,6 +137,16 @@ class OrderSerializer(serializers.ModelSerializer):
         )
         
         for item in resolved_items:
-            OrderItem.objects.create(order=order, laptop_id=item['produk'].id, jumlah=item['jumlah'], harga_saat_beli=item['harga'])
-            
+            OrderItem.objects.create(
+                order=order,
+                laptop_id=item['produk'].id,
+                jumlah=item['jumlah'],
+                harga_saat_beli=item['harga']
+            )
+
+            # Kurangi stok produk
+            produk = item['produk']
+            produk.stok -= item['jumlah']
+            produk.save()
+
         return order
