@@ -168,8 +168,13 @@ Proyek ini dilisensikan di bawah MIT License - lihat file `LICENSE` untuk detail
 
 **Febr22**
 - GitHub: [@Febr22](https://github.com/Febr22)
+- Github: [@sairay-yah](https://github.com/sairay-yah)
+- Github: [@cathyptr](https://github.com/cathyptr)
+- Github: [@Imaderaditya05](https://github.com/Imaderaditya05)
+- Github: [@kyaaddd](https://github.com/kyaaddd)
+- Github: [@callmenoi](https://github.com/callmenoi)
+- Github: 
 
-## 📧 Kontak
 
 Untuk pertanyaan atau saran, silakan buat issue di repository ini atau hubungi melalui email.
 
