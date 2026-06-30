@@ -3,13 +3,13 @@
 Tubes_IAE adalah proyek implementasi algoritma kecerdasan buatan untuk tugas besar mata kuliah Intelijensia Buatan (IAE).
 
 ## 📋 Daftar Isi
-- [Tentang Proyek](#tentang-proyek)
-- [Fitur](#fitur)
-- [Teknologi yang Digunakan](#teknologi-yang-digunakan)
-- [Instalasi](#instalasi)
-- [Penggunaan](#penggunaan)
-- [Struktur Proyek](#struktur-proyek)
-- [Kontribusi](#kontribusi)
+- [Tentang Proyek](##tentang-proyek)
+- [Fitur](##fitur)
+- [Teknologi yang Digunakan](##teknologi-yang-digunakan)
+- [Instalasi](##instalasi)
+- [Penggunaan](##penggunaan)
+- [Struktur Proyek](##struktur-proyek)
+- [Kontribusi](##kontribusi)
 
 ## 🎯 Tentang Proyek
 
