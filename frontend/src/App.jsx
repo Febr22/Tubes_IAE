@@ -19,6 +19,7 @@ import AdminProducts from "./pages/admin/AdminProducts";
 import Navbar from "./components/Navbar";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { CartProvider } from "./context/CartContext";
+import FloatingChatButton from "./components/FloatingChatButton.jsx";
 
 function App() {
   return (
@@ -61,6 +62,8 @@ function App() {
             <Route path="/admin/orders" element={<AdminOrders />} />
             <Route path="/admin/products" element={<AdminProducts />} />
           </Routes>
+          {/* Tombol Floating Chatbot */}
+          <FloatingChatButton />
         </ErrorBoundary>
         </NotificationProvider>
       </CartProvider>
